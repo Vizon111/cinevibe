@@ -6,7 +6,7 @@
 ![Tests](https://img.shields.io/badge/tests-Vitest%20%2B%20Playwright-6E9F18?logo=vitest)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-**🔗 Живая демка: [cinevibe.vercel.app](https://cinevibe.vercel.app)**
+**🔗 Живая демка: [cinevibe2.vercel.app](https://cinevibe2.vercel.app)**
 
 Витрина фильмов и сериалов на данных [TMDB](https://www.themoviedb.org/). Переписано с оригинального
 vanilla-JS прототипа на **Next.js 16 (App Router)** и **Tailwind CSS v4**.
