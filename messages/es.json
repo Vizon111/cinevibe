@@ -1,0 +1,145 @@
+{
+  "nav": {
+    "home": "🏠 Inicio",
+    "movies": "🎬 Películas",
+    "tv": "📺 Series",
+    "anime": "🎌 Anime",
+    "new": "🔥 Novedades",
+    "favorites": "❤️ Mi Lista",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
+  },
+  "search": {
+    "placeholder": "Buscar una película...",
+    "button": "Buscar",
+    "ariaLabel": "Buscar películas y series",
+    "popular": "Popular",
+    "results": "Resultados de búsqueda",
+    "noResults": "No se encontraron resultados",
+    "tvBadge": "· serie",
+    "movieBadge": "· película"
+  },
+  "language": {
+    "label": "Idioma",
+    "en": "English",
+    "ru": "Русский",
+    "es": "Español"
+  },
+  "home": {
+    "title": "🏠 Página de inicio"
+  },
+  "sections": {
+    "movies": "🎬 Películas populares",
+    "tv": "📺 Series populares",
+    "anime": "🎌 Anime",
+    "new": "🔥 Novedades"
+  },
+  "genreFilter": {
+    "label": "Géneros",
+    "movies": "Películas",
+    "tv": "Series",
+    "anime": "Géneros de anime 🎌",
+    "clearAria": "Quitar filtro de género"
+  },
+  "movieCard": {
+    "noTitle": "Sin título",
+    "noOverview": "Sin descripción disponible.",
+    "noPoster": "Sin póster",
+    "tv": "Serie",
+    "movie": "Película",
+    "moreDetails": "Más información →"
+  },
+  "favoriteButton": {
+    "added": "❤️ Añadido a favoritos",
+    "removed": "Eliminado de favoritos",
+    "inFavorites": "♥ En favoritos",
+    "addToFavorites": "♡ Añadir a favoritos"
+  },
+  "favorites": {
+    "pageTitle": "❤️ Mi Lista",
+    "metaTitle": "Mi Lista",
+    "metaDescription": "Películas y series que has guardado en tus favoritos.",
+    "emptyTitle": "Tu lista está vacía",
+    "emptyDescription": "Toca ♡ en la tarjeta de una película o serie para añadirla aquí — así es más fácil volver a lo que te llamó la atención.",
+    "browsePopular": "Ver populares"
+  },
+  "pagination": {
+    "ariaLabel": "Paginación",
+    "previous": "Página anterior",
+    "next": "Página siguiente"
+  },
+  "movieGrid": {
+    "noResultsTitle": "No se encontraron resultados",
+    "noResultsDescription": "Prueba con otra búsqueda o género"
+  },
+  "moviesPage": {
+    "metaTitle": "Películas",
+    "metaDescription": "Películas populares y muy valoradas — filtra por género y encuentra algo para ver esta noche."
+  },
+  "tvPage": {
+    "metaTitle": "Series",
+    "metaDescription": "Series populares de EE. UU., Reino Unido y Corea — filtra por género y encuentra tu próxima maratón."
+  },
+  "animePage": {
+    "metaTitle": "Anime",
+    "metaDescription": "Catálogo de anime con filtros por género — acción, romance, fantasía, terror y más."
+  },
+  "newPage": {
+    "metaTitle": "Novedades",
+    "metaDescription": "Películas actualmente en cartelera y series en emisión — lo más reciente y comentado."
+  },
+  "searchPage": {
+    "metaTitleWithQuery": "Buscar: \"{query}\"",
+    "metaTitle": "Buscar",
+    "metaDescriptionWithQuery": "Resultados de búsqueda de películas y series para \"{query}\".",
+    "metaDescription": "Encuentra una película o serie por título.",
+    "promptTitle": "¿Qué vamos a ver?",
+    "promptDescription": "Escribe el título de una película o serie en la barra de búsqueda de arriba.",
+    "resultsFor": "Resultados: \"{query}\""
+  },
+  "titlePage": {
+    "back": "← Volver",
+    "cast": "Reparto",
+    "similarMovies": "Películas similares",
+    "similarTv": "Series similares",
+    "noPoster": "Sin póster",
+    "seasons": "Temporadas: {count}",
+    "episodes": "Episodios: {count}",
+    "minutes": "{count} min",
+    "trailerTitle": "Tráiler: {title}",
+    "noOverview": "Sin descripción disponible.",
+    "unknown": "—"
+  },
+  "apiKeyAlert": {
+    "title": "Se requiere una clave de API de TMDB (Error 401)",
+    "description": "Se necesita una clave de API v3 de TMDB válida para cargar datos reales de The Movie Database.",
+    "howToGetKey": "🔑 Cómo obtener una clave gratuita de TMDB:",
+    "step1": "Ve a",
+    "step1Suffix": "y crea una cuenta gratuita.",
+    "step2": "Abre la configuración de tu perfil: Inicio de sesión → Configuración → API.",
+    "step3": "Haz clic en «Crear» (tipo Developer) y completa el formulario.",
+    "step4": "Copia la API Key (v3 auth) que recibas.",
+    "howToAddKey": "🚀 Cómo añadir la clave al proyecto:",
+    "addKeyDescription": "Crea un archivo <code>.env.local</code> en la raíz del proyecto y añade:",
+    "restartServer": "Luego reinicia el servidor de desarrollo."
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "Este título no existe en la base de datos, o el enlace está desactualizado.",
+    "backHome": "Volver al inicio"
+  },
+  "error": {
+    "title": "Algo salió mal",
+    "description": "No se pudieron cargar los datos. Puede que TMDB no esté disponible temporalmente — inténtalo de nuevo.",
+    "retry": "Reintentar"
+  },
+  "hero": {
+    "titleOfTheDay": "Título Destacado",
+    "moreDetails": "Más Información",
+    "slideAria": "Diapositiva {number}"
+  },
+  "metadata": {
+    "siteDescription": "Encuentra tu próxima película o serie — un catálogo de películas, series y anime con datos de TMDB, con búsqueda, géneros y favoritos.",
+    "ogImageAlt": "Vitrina de Películas y Series"
+  }
+}

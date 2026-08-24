@@ -1,8 +1,8 @@
 import "server-only";
+import { TMDB_LANGUAGE, type Locale } from "@/i18n/config";
 
 const BASE_URL = "https://api.themoviedb.org/3";
 export const IMG_URL = "https://image.tmdb.org/t/p/";
-export const LANG = "ru-RU";
 
 /**
  * Set TMDB_API_KEY in .env.local to your own key (either format works)
@@ -32,16 +32,22 @@ type Params = Record<string, string | number | boolean | undefined>;
 /**
  * Server-side fetch helper. Never exposes the API key to the client —
  * call this only from Server Components, Route Handlers, or Server Actions.
+ *
+ * `locale` controls TMDB's own `language` parameter, so titles,
+ * overviews, genre names, etc. come back already localized — this is
+ * what makes switching the site's language also translate the catalog
+ * content, not just the UI chrome around it.
  */
 export async function tmdbFetch<T>(
   path: string,
   params: Params = {},
-  revalidateSeconds = 3600
+  revalidateSeconds = 3600,
+  locale: Locale = "en"
 ): Promise<T> {
   if (!API_KEY) throw new TmdbAuthError();
 
   const url = new URL(`${BASE_URL}${path}`);
-  url.searchParams.set("language", LANG);
+  url.searchParams.set("language", TMDB_LANGUAGE[locale]);
   if (!IS_JWT) url.searchParams.set("api_key", API_KEY);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined) url.searchParams.set(k, String(v));

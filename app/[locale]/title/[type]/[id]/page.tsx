@@ -2,34 +2,40 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { getDetailBundle } from "@/lib/queries";
 import { TmdbAuthError } from "@/lib/tmdb";
 import { posterUrl, backdropUrl, ratingBadgeClass } from "@/lib/tmdb-client";
 import ApiKeyAlert from "@/components/ApiKeyAlert";
 import FavoriteButton from "@/components/FavoriteButton";
 import MovieGrid from "@/components/MovieGrid";
+import { isLocale, type Locale } from "@/i18n/config";
 import type { MediaType } from "@/types/tmdb";
 
 export const revalidate = 3600;
 
 type TitlePageProps = {
-  params: Promise<{ type: string; id: string }>;
+  params: Promise<{ locale: string; type: string; id: string }>;
 };
 
 export async function generateMetadata({ params }: TitlePageProps): Promise<Metadata> {
-  const { type, id } = await params;
+  const { locale, type, id } = await params;
+  if (!isLocale(locale)) notFound();
   if (type !== "movie" && type !== "tv") return {};
   const movieId = Number(id);
   if (!movieId) return {};
 
+  const t = await getTranslations({ locale, namespace: "titlePage" });
+
   try {
-    const { details } = await getDetailBundle(movieId, type as MediaType);
-    const title = details.title || details.name || "Без названия";
+    const { details } = await getDetailBundle(movieId, type as MediaType, locale);
+    const tCard = await getTranslations({ locale, namespace: "movieCard" });
+    const title = details.title || details.name || tCard("noTitle");
     const description = details.overview
       ? details.overview.length > 200
         ? details.overview.slice(0, 197) + "..."
         : details.overview
-      : "Описание отсутствует.";
+      : t("noOverview");
     const backdrop = backdropUrl(details.backdrop_path, "w1280");
     const poster = posterUrl(details.poster_path, "w500");
     const image = backdrop || poster;
@@ -37,7 +43,7 @@ export async function generateMetadata({ params }: TitlePageProps): Promise<Meta
     return {
       title,
       description,
-      alternates: { canonical: `/title/${type}/${id}` },
+      alternates: { canonical: `/${locale}/title/${type}/${id}` },
       openGraph: {
         title,
         description,
@@ -59,15 +65,19 @@ export async function generateMetadata({ params }: TitlePageProps): Promise<Meta
 }
 
 export default async function TitleDetailPage({ params }: TitlePageProps) {
-  const { type, id } = await params;
+  const { locale, type, id } = await params;
+  if (!isLocale(locale)) notFound();
   if (type !== "movie" && type !== "tv") notFound();
   const mediaType = type as MediaType;
   const movieId = Number(id);
   if (!movieId) notFound();
 
+  const t = await getTranslations({ locale, namespace: "titlePage" });
+  const tCard = await getTranslations({ locale, namespace: "movieCard" });
+
   let bundle;
   try {
-    bundle = await getDetailBundle(movieId, mediaType);
+    bundle = await getDetailBundle(movieId, mediaType, locale as Locale);
   } catch (err) {
     if (err instanceof TmdbAuthError) return <ApiKeyAlert />;
     if (err instanceof Error && err.message.includes("404")) notFound();
@@ -76,19 +86,19 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
 
   const { details, credits, videos, similar } = bundle;
 
-  const title = details.title || details.name || "Без названия";
+  const title = details.title || details.name || tCard("noTitle");
   const date = details.release_date || details.first_air_date || "";
-  const year = date ? date.slice(0, 4) : "—";
-  const rating = details.vote_average ? details.vote_average.toFixed(1) : "—";
+  const year = date ? date.slice(0, 4) : t("unknown");
+  const rating = details.vote_average ? details.vote_average.toFixed(1) : t("unknown");
   const poster = posterUrl(details.poster_path, "w500");
   const genresText = details.genres?.map((g) => g.name).join(", ") || "";
   const runtimeText =
     mediaType === "tv"
-      ? `Количество сезонов: ${details.number_of_seasons ?? "—"} • Количество эпизодов: ${
-          details.number_of_episodes ?? "—"
-        }`
+      ? `${t("seasons", { count: details.number_of_seasons ?? 0 })} • ${t("episodes", {
+          count: details.number_of_episodes ?? 0,
+        })}`
       : details.runtime
-      ? `${details.runtime} мин`
+      ? t("minutes", { count: details.runtime })
       : "";
 
   const trailer = videos.results.find((v) => v.type === "Trailer" && v.site === "YouTube");
@@ -107,8 +117,8 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
       )}
 
       <div className="relative max-w-[1400px] mx-auto px-4 lg:px-8 py-8">
-        <Link href="/" className="text-sm text-muted hover:text-accent2 inline-block mb-6">
-          ← Назад
+        <Link href={`/${locale}`} className="text-sm text-muted hover:text-accent2 inline-block mb-6">
+          {t("back")}
         </Link>
 
         <div className="flex flex-col md:flex-row gap-8">
@@ -116,7 +126,7 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
             {poster ? (
               <Image src={poster} alt={title} fill sizes="288px" className="object-cover" priority />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-muted text-sm">Нет постера</div>
+              <div className="w-full h-full flex items-center justify-center text-muted text-sm">{t("noPoster")}</div>
             )}
           </div>
 
@@ -143,13 +153,11 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
               {runtimeText && <span className="text-muted">{runtimeText}</span>}
             </div>
 
-            <p className="text-text/90 leading-relaxed max-w-3xl">
-              {details.overview || "Описание отсутствует."}
-            </p>
+            <p className="text-text/90 leading-relaxed max-w-3xl">{details.overview || t("noOverview")}</p>
 
             {cast.length > 0 && (
               <div>
-                <h3 className="text-sm font-semibold text-muted mb-3">В ролях</h3>
+                <h3 className="text-sm font-semibold text-muted mb-3">{t("cast")}</h3>
                 <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
                   {cast.map((actor) => {
                     const profile = posterUrl(actor.profile_path, "w185");
@@ -159,9 +167,7 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
                           {profile ? (
                             <Image src={profile} alt={actor.name} fill sizes="64px" className="object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-muted text-xs">
-                              👤
-                            </div>
+                            <div className="w-full h-full flex items-center justify-center text-muted text-xs">👤</div>
                           )}
                         </div>
                         <div>
@@ -184,7 +190,7 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
                   className="w-full h-full"
                   allowFullScreen
                   loading="lazy"
-                  title={`Трейлер: ${title}`}
+                  title={t("trailerTitle", { title })}
                 />
               </div>
             )}
@@ -194,7 +200,7 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
         {similarItems.length > 0 && (
           <div className="mt-12">
             <h3 className="font-display text-2xl tracking-wide mb-4">
-              {mediaType === "tv" ? "Похожие сериалы" : "Похожие фильмы"}
+              {mediaType === "tv" ? t("similarTv") : t("similarMovies")}
             </h3>
             <MovieGrid items={similarItems} />
           </div>

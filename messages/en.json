@@ -1,0 +1,145 @@
+{
+  "nav": {
+    "home": "🏠 Home",
+    "movies": "🎬 Movies",
+    "tv": "📺 TV Shows",
+    "anime": "🎌 Anime",
+    "new": "🔥 New & Popular",
+    "favorites": "❤️ My List",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "search": {
+    "placeholder": "Find a movie...",
+    "button": "Search",
+    "ariaLabel": "Search movies and TV shows",
+    "popular": "Popular",
+    "results": "Search results",
+    "noResults": "Nothing found",
+    "tvBadge": "· TV",
+    "movieBadge": "· movie"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "ru": "Русский",
+    "es": "Español"
+  },
+  "home": {
+    "title": "🏠 Home"
+  },
+  "sections": {
+    "movies": "🎬 Popular Movies",
+    "tv": "📺 Popular TV Shows",
+    "anime": "🎌 Anime",
+    "new": "🔥 New & Popular"
+  },
+  "genreFilter": {
+    "label": "Genres",
+    "movies": "Movies",
+    "tv": "TV Shows",
+    "anime": "Anime genres 🎌",
+    "clearAria": "Clear genre filter"
+  },
+  "movieCard": {
+    "noTitle": "Untitled",
+    "noOverview": "No description available.",
+    "noPoster": "No poster",
+    "tv": "TV Show",
+    "movie": "Movie",
+    "moreDetails": "More details →"
+  },
+  "favoriteButton": {
+    "added": "❤️ Added to favorites",
+    "removed": "Removed from favorites",
+    "inFavorites": "♥ In favorites",
+    "addToFavorites": "♡ Add to favorites"
+  },
+  "favorites": {
+    "pageTitle": "❤️ My List",
+    "metaTitle": "My List",
+    "metaDescription": "Movies and TV shows you've saved to your favorites.",
+    "emptyTitle": "Your list is empty",
+    "emptyDescription": "Tap ♡ on a movie or show's card to add it here — makes it easy to come back to what caught your eye.",
+    "browsePopular": "Browse popular titles"
+  },
+  "pagination": {
+    "ariaLabel": "Pagination",
+    "previous": "Previous page",
+    "next": "Next page"
+  },
+  "movieGrid": {
+    "noResultsTitle": "Nothing found",
+    "noResultsDescription": "Try a different search or genre"
+  },
+  "moviesPage": {
+    "metaTitle": "Movies",
+    "metaDescription": "Popular and highly-rated movies — filter by genre and find something to watch tonight."
+  },
+  "tvPage": {
+    "metaTitle": "TV Shows",
+    "metaDescription": "Popular TV shows from the US, UK, and Korea — filter by genre and find your next binge."
+  },
+  "animePage": {
+    "metaTitle": "Anime",
+    "metaDescription": "Anime catalog with genre filters — action, romance, fantasy, horror, and more."
+  },
+  "newPage": {
+    "metaTitle": "New & Popular",
+    "metaDescription": "Movies now in theaters and shows currently airing — the freshest and most talked-about titles."
+  },
+  "searchPage": {
+    "metaTitleWithQuery": "Search: \"{query}\"",
+    "metaTitle": "Search",
+    "metaDescriptionWithQuery": "Search results for movies and TV shows matching \"{query}\".",
+    "metaDescription": "Find a movie or TV show by title.",
+    "promptTitle": "What are we watching?",
+    "promptDescription": "Type a movie or show title in the search bar above.",
+    "resultsFor": "Results: \"{query}\""
+  },
+  "titlePage": {
+    "back": "← Back",
+    "cast": "Cast",
+    "similarMovies": "Similar Movies",
+    "similarTv": "Similar TV Shows",
+    "noPoster": "No poster",
+    "seasons": "Seasons: {count}",
+    "episodes": "Episodes: {count}",
+    "minutes": "{count} min",
+    "trailerTitle": "Trailer: {title}",
+    "noOverview": "No description available.",
+    "unknown": "—"
+  },
+  "apiKeyAlert": {
+    "title": "TMDB API key required (Error 401)",
+    "description": "A valid TMDB v3 API key is required to load real movie data from The Movie Database.",
+    "howToGetKey": "🔑 How to get a free TMDB key:",
+    "step1": "Go to",
+    "step1Suffix": "and create a free account.",
+    "step2": "Open your profile settings: Login → Settings → API.",
+    "step3": "Click \"Create\" (Developer type) and fill out the form.",
+    "step4": "Copy the API Key (v3 auth) you receive.",
+    "howToAddKey": "🚀 How to add the key to the project:",
+    "addKeyDescription": "Create a <code>.env.local</code> file at the project root and add:",
+    "restartServer": "Then restart the dev server."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This title doesn't exist in the database, or the link is outdated.",
+    "backHome": "Back to home"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "Failed to load data. TMDB might be temporarily unavailable — try again.",
+    "retry": "Retry"
+  },
+  "hero": {
+    "titleOfTheDay": "Featured Title",
+    "moreDetails": "More Details",
+    "slideAria": "Slide {number}"
+  },
+  "metadata": {
+    "siteDescription": "Find your next movie or show — a catalog of movies, TV series, and anime powered by TMDB, with search, genres, and favorites.",
+    "ogImageAlt": "Movie & TV Showcase"
+  }
+}

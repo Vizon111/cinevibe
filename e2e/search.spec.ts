@@ -2,9 +2,9 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Search", () => {
   test("typing in the header search box shows live suggestions", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/en");
 
-    const input = page.getByPlaceholder("Найти фильм...");
+    const input = page.getByPlaceholder("Find a movie...");
     await input.fill("batman");
 
     // Debounced suggestions dropdown should show at least one result.
@@ -13,27 +13,27 @@ test.describe("Search", () => {
   });
 
   test("pressing Enter navigates to the full search results page", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/en");
 
-    const input = page.getByPlaceholder("Найти фильм...");
+    const input = page.getByPlaceholder("Find a movie...");
     await input.fill("batman");
     await input.press("Enter");
 
-    await expect(page).toHaveURL(/\/search\?q=batman/);
-    await expect(page.getByRole("heading", { name: /Результаты: «batman»/ })).toBeVisible({
+    await expect(page).toHaveURL(/\/en\/search\?q=batman/);
+    await expect(page.getByRole("heading", { name: /Results: "batman"/ })).toBeVisible({
       timeout: 15_000,
     });
   });
 
   test("search page prompts for a query when none is given", async ({ page }) => {
-    await page.goto("/search");
-    await expect(page.getByRole("heading", { name: "Что будем смотреть?" })).toBeVisible();
+    await page.goto("/en/search");
+    await expect(page.getByRole("heading", { name: "What are we watching?" })).toBeVisible();
   });
 
   test("clicking a suggestion navigates straight to its detail page", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/en");
 
-    const input = page.getByPlaceholder("Найти фильм...");
+    const input = page.getByPlaceholder("Find a movie...");
     await input.fill("batman");
 
     const firstSuggestion = page
@@ -43,6 +43,6 @@ test.describe("Search", () => {
     await expect(firstSuggestion).toBeVisible({ timeout: 10_000 });
     await firstSuggestion.click();
 
-    await expect(page).toHaveURL(/\/title\/(movie|tv)\/\d+/);
+    await expect(page).toHaveURL(/\/en\/title\/(movie|tv)\/\d+/);
   });
 });

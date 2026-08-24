@@ -1,22 +1,55 @@
 import "server-only";
 import { tmdbFetch } from "./tmdb";
+import type { Locale } from "@/i18n/config";
 import type { Genre, TmdbItem, TmdbListResponse, MovieDetails, CreditsResponse, VideosResponse, MediaType } from "@/types/tmdb";
 
-export const ANIME_GENRES = [
-  { id: "10759", name: "💥 Экшен" },
-  { id: "romance", name: "💕 Романтика", keyword: "9840" },
-  { id: "35", name: "😂 Комедия" },
-  { id: "10765", name: "🔮 Фэнтези" },
-  { id: "horror", name: "👻 Ужасы", keyword: "3205" },
-  { id: "18", name: "🎭 Драма" },
-  { id: "9648", name: "🔍 Детектив" },
-  { id: "10762", name: "👶 Детские" },
-] as const;
+/**
+ * Anime genre labels are hand-authored (TMDB doesn't have a dedicated
+ * "anime" taxonomy — see ANIME_GENRES usage below), so unlike everything
+ * else in this file they can't be localized by TMDB's `language` param
+ * and need their own per-locale copy here.
+ */
+const ANIME_GENRES_BY_LOCALE: Record<Locale, ReadonlyArray<{ id: string; name: string; keyword?: string }>> = {
+  en: [
+    { id: "10759", name: "💥 Action" },
+    { id: "romance", name: "💕 Romance", keyword: "9840" },
+    { id: "35", name: "😂 Comedy" },
+    { id: "10765", name: "🔮 Fantasy" },
+    { id: "horror", name: "👻 Horror", keyword: "3205" },
+    { id: "18", name: "🎭 Drama" },
+    { id: "9648", name: "🔍 Mystery" },
+    { id: "10762", name: "👶 Kids" },
+  ],
+  ru: [
+    { id: "10759", name: "💥 Экшен" },
+    { id: "romance", name: "💕 Романтика", keyword: "9840" },
+    { id: "35", name: "😂 Комедия" },
+    { id: "10765", name: "🔮 Фэнтези" },
+    { id: "horror", name: "👻 Ужасы", keyword: "3205" },
+    { id: "18", name: "🎭 Драма" },
+    { id: "9648", name: "🔍 Детектив" },
+    { id: "10762", name: "👶 Детские" },
+  ],
+  es: [
+    { id: "10759", name: "💥 Acción" },
+    { id: "romance", name: "💕 Romance", keyword: "9840" },
+    { id: "35", name: "😂 Comedia" },
+    { id: "10765", name: "🔮 Fantasía" },
+    { id: "horror", name: "👻 Terror", keyword: "3205" },
+    { id: "18", name: "🎭 Drama" },
+    { id: "9648", name: "🔍 Misterio" },
+    { id: "10762", name: "👶 Infantil" },
+  ],
+};
 
-export async function getGenres(): Promise<{ movie: Genre[]; tv: Genre[] }> {
+export function getAnimeGenres(locale: Locale) {
+  return ANIME_GENRES_BY_LOCALE[locale];
+}
+
+export async function getGenres(locale: Locale): Promise<{ movie: Genre[]; tv: Genre[] }> {
   const [movieData, tvData] = await Promise.all([
-    tmdbFetch<{ genres: Genre[] }>("/genre/movie/list").catch(() => ({ genres: [] })),
-    tmdbFetch<{ genres: Genre[] }>("/genre/tv/list").catch(() => ({ genres: [] })),
+    tmdbFetch<{ genres: Genre[] }>("/genre/movie/list", {}, 3600, locale).catch(() => ({ genres: [] })),
+    tmdbFetch<{ genres: Genre[] }>("/genre/tv/list", {}, 3600, locale).catch(() => ({ genres: [] })),
   ]);
   return { movie: movieData.genres, tv: tvData.genres };
 }
@@ -36,46 +69,68 @@ export interface SectionParams {
   page: number;
   genre?: string | null;
   query?: string;
+  locale: Locale;
 }
 
-export async function getSectionData({ section, page, genre, query }: SectionParams): Promise<TmdbListResponse<TmdbItem>> {
+export async function getSectionData({
+  section,
+  page,
+  genre,
+  query,
+  locale,
+}: SectionParams): Promise<TmdbListResponse<TmdbItem>> {
   if (section === "search") {
-    return tmdbFetch<TmdbListResponse<TmdbItem>>("/search/multi", { query: query || "", page });
+    return tmdbFetch<TmdbListResponse<TmdbItem>>("/search/multi", { query: query || "", page }, 3600, locale);
   }
 
   if (section === "home") {
     if (genre) {
       const [movies, tvs] = await Promise.all([
-        tmdbFetch<TmdbListResponse>("/discover/movie", { page, with_genres: genre }).catch(() => empty()),
-        tmdbFetch<TmdbListResponse>("/discover/tv", { page, with_genres: genre }).catch(() => empty()),
+        tmdbFetch<TmdbListResponse>("/discover/movie", { page, with_genres: genre }, 3600, locale).catch(() => empty()),
+        tmdbFetch<TmdbListResponse>("/discover/tv", { page, with_genres: genre }, 3600, locale).catch(() => empty()),
       ]);
       return merge(movies, tvs);
     }
     const [movies, tvs] = await Promise.all([
-      tmdbFetch<TmdbListResponse>("/movie/popular", { page }).catch(() => empty()),
-      tmdbFetch<TmdbListResponse>("/tv/popular", { page }).catch(() => empty()),
+      tmdbFetch<TmdbListResponse>("/movie/popular", { page }, 3600, locale).catch(() => empty()),
+      tmdbFetch<TmdbListResponse>("/tv/popular", { page }, 3600, locale).catch(() => empty()),
     ]);
     return merge(movies, tvs);
   }
 
   if (section === "movies") {
-    if (genre) return tmdbFetch("/discover/movie", { page, with_genres: genre });
-    return tmdbFetch("/discover/movie", {
-      page,
-      sort_by: "vote_count.desc",
-      "vote_count.gte": 10000,
-      "vote_average.gte": 7,
-    });
+    if (genre) return tmdbFetch("/discover/movie", { page, with_genres: genre }, 3600, locale);
+    return tmdbFetch(
+      "/discover/movie",
+      {
+        page,
+        sort_by: "vote_count.desc",
+        "vote_count.gte": 10000,
+        "vote_average.gte": 7,
+      },
+      3600,
+      locale
+    );
   }
 
   if (section === "tv") {
     if (genre)
-      return tmdbFetch("/discover/tv", { page, with_genres: genre, with_origin_country: "US|GB|KR" });
-    return tmdbFetch("/discover/tv", {
-      page,
-      with_origin_country: "US|GB|KR",
-      sort_by: "popularity.desc",
-    });
+      return tmdbFetch(
+        "/discover/tv",
+        { page, with_genres: genre, with_origin_country: "US|GB|KR" },
+        3600,
+        locale
+      );
+    return tmdbFetch(
+      "/discover/tv",
+      {
+        page,
+        with_origin_country: "US|GB|KR",
+        sort_by: "popularity.desc",
+      },
+      3600,
+      locale
+    );
   }
 
   if (section === "anime") {
@@ -85,34 +140,44 @@ export async function getSectionData({ section, page, genre, query }: SectionPar
       with_origin_country: "JP",
     };
     if (genre) {
-      const found = ANIME_GENRES.find((g) => String(g.id) === String(genre));
+      const found = getAnimeGenres(locale).find((g) => String(g.id) === String(genre));
       if (found) {
-        if ("keyword" in found && found.keyword) {
+        if (found.keyword) {
           params.with_keywords = found.keyword;
         } else {
           params.with_genres = `16,${found.id}`;
         }
       }
     }
-    return tmdbFetch("/discover/tv", params);
+    return tmdbFetch("/discover/tv", params, 3600, locale);
   }
 
   if (section === "new") {
     if (genre) {
       const [movies, tvs] = await Promise.all([
-        tmdbFetch<TmdbListResponse>("/discover/movie", { page, with_genres: genre, sort_by: "popularity.desc" }).catch(() => empty()),
-        tmdbFetch<TmdbListResponse>("/discover/tv", { page, with_genres: genre, sort_by: "popularity.desc" }).catch(() => empty()),
+        tmdbFetch<TmdbListResponse>(
+          "/discover/movie",
+          { page, with_genres: genre, sort_by: "popularity.desc" },
+          3600,
+          locale
+        ).catch(() => empty()),
+        tmdbFetch<TmdbListResponse>(
+          "/discover/tv",
+          { page, with_genres: genre, sort_by: "popularity.desc" },
+          3600,
+          locale
+        ).catch(() => empty()),
       ]);
       return merge(movies, tvs);
     }
     const [movies, tvs] = await Promise.all([
-      tmdbFetch<TmdbListResponse>("/movie/now_playing", { page }).catch(() => empty()),
-      tmdbFetch<TmdbListResponse>("/tv/on_the_air", { page }).catch(() => empty()),
+      tmdbFetch<TmdbListResponse>("/movie/now_playing", { page }, 3600, locale).catch(() => empty()),
+      tmdbFetch<TmdbListResponse>("/tv/on_the_air", { page }, 3600, locale).catch(() => empty()),
     ]);
     return merge(movies, tvs);
   }
 
-  return tmdbFetch("/movie/popular", { page });
+  return tmdbFetch("/movie/popular", { page }, 3600, locale);
 }
 
 function empty(): TmdbListResponse {
@@ -130,9 +195,10 @@ function merge(movies: TmdbListResponse, tvs: TmdbListResponse): TmdbListRespons
 
 export interface HeroParams {
   section: SectionParams["section"] | "favorites";
+  locale: Locale;
 }
 
-export async function getHeroMovies({ section }: HeroParams): Promise<TmdbItem[]> {
+export async function getHeroMovies({ section, locale }: HeroParams): Promise<TmdbItem[]> {
   let endpoint = "/movie/popular";
   const params: Record<string, string | number> = { page: 1 };
 
@@ -155,7 +221,7 @@ export async function getHeroMovies({ section }: HeroParams): Promise<TmdbItem[]
     endpoint = "/movie/now_playing";
   }
 
-  const data = await tmdbFetch<TmdbListResponse>(endpoint, params, 1800);
+  const data = await tmdbFetch<TmdbListResponse>(endpoint, params, 1800, locale);
   const withBackdrop = data.results.filter((m) => m.backdrop_path);
   const shuffled = [...withBackdrop].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 6);
@@ -168,21 +234,21 @@ export interface DetailBundle {
   similar: TmdbListResponse;
 }
 
-export async function getDetailBundle(id: number, mediaType: MediaType): Promise<DetailBundle> {
+export async function getDetailBundle(id: number, mediaType: MediaType, locale: Locale): Promise<DetailBundle> {
   const [details, credits, videos, similar] = await Promise.all([
-    tmdbFetch<MovieDetails>(`/${mediaType}/${id}`),
-    tmdbFetch<CreditsResponse>(`/${mediaType}/${id}/credits`),
-    tmdbFetch<VideosResponse>(`/${mediaType}/${id}/videos`),
-    tmdbFetch<TmdbListResponse>(`/${mediaType}/${id}/similar`).catch(() => empty()),
+    tmdbFetch<MovieDetails>(`/${mediaType}/${id}`, {}, 3600, locale),
+    tmdbFetch<CreditsResponse>(`/${mediaType}/${id}/credits`, {}, 3600, locale),
+    tmdbFetch<VideosResponse>(`/${mediaType}/${id}/videos`, {}, 3600, locale),
+    tmdbFetch<TmdbListResponse>(`/${mediaType}/${id}/similar`, {}, 3600, locale).catch(() => empty()),
   ]);
   return { details, credits, videos, similar };
 }
 
-export async function searchSuggestions(query: string): Promise<TmdbItem[]> {
+export async function searchSuggestions(query: string, locale: Locale): Promise<TmdbItem[]> {
   if (!query) {
-    const data = await tmdbFetch<TmdbListResponse>("/movie/popular", { page: 1 }, 1800);
+    const data = await tmdbFetch<TmdbListResponse>("/movie/popular", { page: 1 }, 1800, locale);
     return data.results.slice(0, 6);
   }
-  const data = await tmdbFetch<TmdbListResponse>("/search/movie", { query, page: 1 }, 0);
+  const data = await tmdbFetch<TmdbListResponse>("/search/movie", { query, page: 1 }, 0, locale);
   return data.results.slice(0, 6);
 }

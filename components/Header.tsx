@@ -3,21 +3,30 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import SearchBar from "./SearchBar";
-
-const NAV_ITEMS = [
-  { href: "/", label: "🏠 Главная", key: "home" },
-  { href: "/movies", label: "🎬 Фильмы", key: "movies" },
-  { href: "/tv", label: "📺 Сериалы", key: "tv" },
-  { href: "/anime", label: "🎌 Аниме", key: "anime" },
-  { href: "/new", label: "🔥 Новое и популярное", key: "new" },
-  { href: "/favorites", label: "❤️ Мой список", key: "favorites" },
-];
+import LanguageSwitcher from "./LanguageSwitcher";
+import { stripLocale } from "@/i18n/navigation";
 
 export default function Header() {
   const pathname = usePathname();
+  const locale = useLocale();
+  const t = useTranslations("nav");
   const [menuOpen, setMenuOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
+
+  const NAV_ITEMS = [
+    { href: "/", label: t("home"), key: "home" },
+    { href: "/movies", label: t("movies"), key: "movies" },
+    { href: "/tv", label: t("tv"), key: "tv" },
+    { href: "/anime", label: t("anime"), key: "anime" },
+    { href: "/new", label: t("new"), key: "new" },
+    { href: "/favorites", label: t("favorites"), key: "favorites" },
+  ];
+
+  // Compare against the locale-stripped path so nav items stay "active"
+  // regardless of which of the three locale prefixes is currently shown.
+  const localePath = stripLocale(pathname);
 
   // Close the mobile menu on route change so it never stays open over the
   // newly-navigated page. Derived during render (not a useEffect) to avoid
@@ -30,20 +39,20 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-bg/80 backdrop-blur-md shadow-[0_1px_0_rgba(255,255,255,0.06),0_8px_24px_-8px_rgba(0,0,0,0.6)]">
       <div className="max-w-[1400px] mx-auto flex items-center gap-4 px-4 py-3 lg:px-8">
-        <Link href="/" className="font-display text-3xl tracking-wide text-accent shrink-0">
+        <Link href={`/${locale}`} className="font-display text-3xl tracking-wide text-accent shrink-0">
           🎬 CineVibe
         </Link>
 
         {/* Full search bar + inline nav — hidden below md, where they move into the mobile menu. */}
         <div className="hidden md:flex md:items-center md:gap-4 md:flex-1 md:min-w-0">
           <SearchBar />
-          <nav className="flex flex-wrap gap-2 ml-auto">
+          <nav className="flex flex-wrap gap-2 ml-auto items-center">
             {NAV_ITEMS.map((item) => {
-              const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              const active = item.href === "/" ? localePath === "/" : localePath.startsWith(item.href);
               return (
                 <Link
                   key={item.key}
-                  href={item.href}
+                  href={`/${locale}${item.href === "/" ? "" : item.href}`}
                   className={`text-sm px-3 py-2 rounded-lg border transition-colors whitespace-nowrap ${
                     active
                       ? "bg-accent border-accent text-white"
@@ -54,16 +63,17 @@ export default function Header() {
                 </Link>
               );
             })}
+            <LanguageSwitcher />
           </nav>
         </div>
 
         <button
           onClick={() => setMenuOpen((o) => !o)}
-          aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"}
+          aria-label={menuOpen ? t("closeMenu") : t("openMenu")}
           aria-expanded={menuOpen}
           className="md:hidden ml-auto w-10 h-10 flex items-center justify-center rounded-lg border border-border text-text hover:border-accent transition-colors shrink-0"
         >
-          <span className="sr-only">{menuOpen ? "Закрыть меню" : "Открыть меню"}</span>
+          <span className="sr-only">{menuOpen ? t("closeMenu") : t("openMenu")}</span>
           {menuOpen ? (
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M4 4l12 12M16 4L4 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -81,11 +91,11 @@ export default function Header() {
           <SearchBar />
           <nav className="flex flex-col gap-1">
             {NAV_ITEMS.map((item) => {
-              const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              const active = item.href === "/" ? localePath === "/" : localePath.startsWith(item.href);
               return (
                 <Link
                   key={item.key}
-                  href={item.href}
+                  href={`/${locale}${item.href === "/" ? "" : item.href}`}
                   className={`text-sm px-3 py-2.5 rounded-lg border transition-colors ${
                     active
                       ? "bg-accent border-accent text-white"
@@ -97,6 +107,7 @@ export default function Header() {
               );
             })}
           </nav>
+          <LanguageSwitcher />
         </div>
       )}
     </header>

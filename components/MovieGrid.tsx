@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import type { TmdbItem } from "@/types/tmdb";
 import MovieCard from "./MovieCard";
 
@@ -12,12 +13,14 @@ export default function MovieGrid({
    *  search/filter message, which doesn't make sense everywhere MovieGrid is used. */
   emptyState?: ReactNode;
 }) {
+  const t = useTranslations("movieGrid");
+
   if (!items || items.length === 0) {
     return (
       emptyState ?? (
         <div className="flex flex-col items-center justify-center py-24 text-center gap-2">
-          <h3 className="font-display text-2xl tracking-wide">Ничего не найдено</h3>
-          <p className="text-muted text-sm">Попробуй другой запрос или жанр</p>
+          <h3 className="font-display text-2xl tracking-wide">{t("noResultsTitle")}</h3>
+          <p className="text-muted text-sm">{t("noResultsDescription")}</p>
         </div>
       )
     );

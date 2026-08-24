@@ -1,17 +1,20 @@
 import { Suspense } from "react";
+import { getLocale, getTranslations } from "next-intl/server";
 import Hero from "@/components/Hero";
 import SectionHeader from "@/components/SectionHeader";
 import GenreFilter from "@/components/GenreFilter";
 import MovieGrid from "@/components/MovieGrid";
 import Pagination from "@/components/Pagination";
 import ApiKeyAlert from "@/components/ApiKeyAlert";
-import { getSectionData, getGenres, getHeroMovies, ANIME_GENRES } from "@/lib/queries";
+import { getSectionData, getGenres, getHeroMovies, getAnimeGenres } from "@/lib/queries";
 import { TmdbAuthError } from "@/lib/tmdb";
+import type { Locale } from "@/i18n/config";
 import type { Genre } from "@/types/tmdb";
 
 interface Props {
   section: "movies" | "tv" | "anime" | "new";
   title: string;
+  /** Locale-agnostic path, e.g. "/movies" — the current locale is prefixed internally. */
   basePath: string;
   searchParams: Promise<{ page?: string; genre?: string }>;
 }
@@ -20,14 +23,17 @@ export default async function SectionPage({ section, title, basePath, searchPara
   const params = await searchParams;
   const page = Number(params.page) || 1;
   const genre = params.genre || null;
+  const locale = (await getLocale()) as Locale;
+  const t = await getTranslations("genreFilter");
+  const localizedBasePath = `/${locale}${basePath}`;
 
   let data, genres, heroMovies;
   try {
     const needsGenres = section !== "anime";
     [data, genres, heroMovies] = await Promise.all([
-      getSectionData({ section, page, genre }),
-      needsGenres ? getGenres() : Promise.resolve({ movie: [] as Genre[], tv: [] as Genre[] }),
-      page === 1 && !genre ? getHeroMovies({ section }) : Promise.resolve([]),
+      getSectionData({ section, page, genre, locale }),
+      needsGenres ? getGenres(locale) : Promise.resolve({ movie: [] as Genre[], tv: [] as Genre[] }),
+      page === 1 && !genre ? getHeroMovies({ section, locale }) : Promise.resolve([]),
     ]);
   } catch (err) {
     if (err instanceof TmdbAuthError) return <ApiKeyAlert />;
@@ -42,18 +48,23 @@ export default async function SectionPage({ section, title, basePath, searchPara
         <SectionHeader title={title}>
           <Suspense fallback={null}>
             {section === "anime" ? (
-              <GenreFilter basePath={basePath} singleGenres={ANIME_GENRES} singleLabel="Жанры аниме 🎌" mode="single" />
+              <GenreFilter
+                basePath={localizedBasePath}
+                singleGenres={getAnimeGenres(locale)}
+                singleLabel={t("anime")}
+                mode="single"
+              />
             ) : section === "movies" ? (
               // /movies only ever queries /discover/movie, so offering the
               // TV genre column here would apply a TV genre id to a movie
               // query — showing only movie genres keeps filters meaningful.
-              <GenreFilter basePath={basePath} singleGenres={genres.movie} singleLabel="Жанры" mode="single" />
+              <GenreFilter basePath={localizedBasePath} singleGenres={genres.movie} singleLabel={t("label")} mode="single" />
             ) : section === "tv" ? (
-              <GenreFilter basePath={basePath} singleGenres={genres.tv} singleLabel="Жанры" mode="single" />
+              <GenreFilter basePath={localizedBasePath} singleGenres={genres.tv} singleLabel={t("label")} mode="single" />
             ) : (
               // "new" mixes movies and TV shows together, so both genre
               // columns are relevant here.
-              <GenreFilter basePath={basePath} movieGenres={genres.movie} tvGenres={genres.tv} />
+              <GenreFilter basePath={localizedBasePath} movieGenres={genres.movie} tvGenres={genres.tv} />
             )}
           </Suspense>
         </SectionHeader>
@@ -62,7 +73,7 @@ export default async function SectionPage({ section, title, basePath, searchPara
         <Pagination
           currentPage={page}
           totalPages={Math.min(data.total_pages || 1, 20)}
-          basePath={basePath}
+          basePath={localizedBasePath}
           searchParams={{ genre: genre || undefined }}
         />
       </div>

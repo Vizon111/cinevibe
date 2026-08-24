@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import type { TmdbItem, FavoriteItem } from "@/types/tmdb";
 import { posterUrl, ratingBadgeClass } from "@/lib/tmdb-client";
 import { useFavorites } from "@/context/FavoritesContext";
@@ -10,9 +11,12 @@ import { useToast } from "@/context/ToastContext";
 export default function MovieCard({ item, index = 0 }: { item: TmdbItem; index?: number }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { showToast } = useToast();
+  const locale = useLocale();
+  const t = useTranslations("movieCard");
+  const tFav = useTranslations("favoriteButton");
 
   const isTv = item.name !== undefined || item.media_type === "tv";
-  const title = item.title || item.name || "Без названия";
+  const title = item.title || item.name || t("noTitle");
   const date = item.release_date || item.first_air_date || "";
   const year = date ? date.slice(0, 4) : "—";
   const rating = item.vote_average ? item.vote_average.toFixed(1) : "—";
@@ -22,7 +26,7 @@ export default function MovieCard({ item, index = 0 }: { item: TmdbItem; index?:
     ? item.overview.length > 150
       ? item.overview.slice(0, 147) + "..."
       : item.overview
-    : "Нет описания.";
+    : t("noOverview");
 
   function handleFavClick(e: React.MouseEvent) {
     e.preventDefault();
@@ -38,7 +42,7 @@ export default function MovieCard({ item, index = 0 }: { item: TmdbItem; index?:
       first_air_date: item.first_air_date,
     };
     const result = toggleFavorite(favItem);
-    showToast(result === "added" ? "❤️ Добавлено в избранное" : "Убрано из избранного");
+    showToast(result === "added" ? tFav("added") : tFav("removed"));
   }
 
   return (
@@ -46,7 +50,7 @@ export default function MovieCard({ item, index = 0 }: { item: TmdbItem; index?:
       className="group relative flex flex-col rounded-xl overflow-hidden bg-surface border border-border hover:border-accent/60 shadow-md hover:shadow-2xl hover:shadow-black/40 hover:-translate-y-1 transition-[transform,box-shadow,border-color] duration-300 animate-fade-up"
       style={{ animationDelay: `${(index % 24) * 0.04}s` }}
     >
-      <Link href={`/title/${isTv ? "tv" : "movie"}/${item.id}`} className="contents">
+      <Link href={`/${locale}/title/${isTv ? "tv" : "movie"}/${item.id}`} className="contents">
         <div className="relative aspect-[2/3] bg-surface2 overflow-hidden">
           {poster ? (
             <Image
@@ -58,7 +62,7 @@ export default function MovieCard({ item, index = 0 }: { item: TmdbItem; index?:
             />
           ) : (
             <div className="absolute inset-0 flex items-start justify-center pt-8 text-muted text-xs px-2 text-center transition-opacity duration-300 group-hover:opacity-0">
-              Нет постера
+              {t("noPoster")}
             </div>
           )}
           {/* Constant subtle bottom shade — keeps every card reading as one
@@ -68,11 +72,11 @@ export default function MovieCard({ item, index = 0 }: { item: TmdbItem; index?:
               sharing the same title (reboots, spin-off films, etc.), so
               without this two cards can look like an accidental duplicate. */}
           <span className="absolute top-2 left-2 text-[10px] font-medium uppercase tracking-wide bg-black/60 backdrop-blur text-white/90 px-2 py-0.5 rounded-full">
-            {isTv ? "Сериал" : "Фильм"}
+            {isTv ? t("tv") : t("movie")}
           </span>
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
             <p className="text-xs text-white/90 line-clamp-4 mb-2">{overview}</p>
-            <span className="text-xs font-medium text-accent2">Подробнее →</span>
+            <span className="text-xs font-medium text-accent2">{t("moreDetails")}</span>
           </div>
         </div>
 
@@ -91,8 +95,8 @@ export default function MovieCard({ item, index = 0 }: { item: TmdbItem; index?:
 
       <button
         onClick={handleFavClick}
-        title={fav ? "Убрать из избранного" : "В избранное"}
-        aria-label={fav ? "Убрать из избранного" : "В избранное"}
+        title={fav ? tFav("inFavorites") : tFav("addToFavorites")}
+        aria-label={fav ? tFav("inFavorites") : tFav("addToFavorites")}
         className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center text-lg backdrop-blur border transition-colors z-10 ${
           fav
             ? "bg-accent border-accent text-white"

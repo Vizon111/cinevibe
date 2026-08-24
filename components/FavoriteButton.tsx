@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useToast } from "@/context/ToastContext";
 import type { MediaType } from "@/types/tmdb";
@@ -23,6 +24,7 @@ export default function FavoriteButton({
 }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { showToast } = useToast();
+  const t = useTranslations("favoriteButton");
   const fav = isFavorite(id, mediaType);
   const isTv = mediaType === "tv";
 
@@ -37,7 +39,7 @@ export default function FavoriteButton({
       release_date: releaseDate,
       first_air_date: firstAirDate,
     });
-    showToast(result === "added" ? "❤️ Добавлено в избранное" : "Убрано из избранного");
+    showToast(result === "added" ? t("added") : t("removed"));
   }
 
   return (
@@ -47,7 +49,7 @@ export default function FavoriteButton({
         fav ? "bg-accent border-accent text-white" : "border-border text-text hover:border-accent"
       }`}
     >
-      {fav ? "♥ В избранном" : "♡ В избранное"}
+      {fav ? t("inFavorites") : t("addToFavorites")}
     </button>
   );
 }

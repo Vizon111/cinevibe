@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export default function Pagination({
   currentPage,
@@ -8,9 +9,12 @@ export default function Pagination({
 }: {
   currentPage: number;
   totalPages: number;
+  /** Already locale-prefixed, e.g. "/en/movies". */
   basePath: string;
   searchParams?: Record<string, string | undefined>;
 }) {
+  const t = useTranslations("pagination");
+
   if (totalPages <= 1) return null;
 
   function hrefFor(page: number) {
@@ -28,10 +32,11 @@ export default function Pagination({
   if (currentPage < totalPages) pages.push(currentPage + 1);
 
   return (
-    <nav aria-label="Пагинация" className="flex items-center justify-center gap-2 py-10">
+    <nav aria-label={t("ariaLabel")} className="flex items-center justify-center gap-2 py-10">
       {currentPage > 1 && (
         <Link
           href={hrefFor(currentPage - 1)}
+          aria-label={t("previous")}
           className="w-10 h-10 flex items-center justify-center rounded-lg border border-border text-muted hover:border-accent hover:text-text transition-colors"
         >
           ←
@@ -54,6 +59,7 @@ export default function Pagination({
       {currentPage < totalPages && (
         <Link
           href={hrefFor(currentPage + 1)}
+          aria-label={t("next")}
           className="w-10 h-10 flex items-center justify-center rounded-lg border border-border text-muted hover:border-accent hover:text-text transition-colors"
         >
           →

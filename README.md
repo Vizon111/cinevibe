@@ -3,154 +3,194 @@
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-blue?logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-38B2AC?logo=tailwindcss)
+![i18n](https://img.shields.io/badge/i18n-en%20%7C%20ru%20%7C%20es-4B8BBE?logo=next.js)
 ![Tests](https://img.shields.io/badge/tests-Vitest%20%2B%20Playwright-6E9F18?logo=vitest)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-**🔗 Живая демка: [cinevibe2.vercel.app](https://cinevibe2.vercel.app)**
+**🔗 Live demo: [cinevibe.vercel.app](https://cinevibe.vercel.app)**
 
-Витрина фильмов и сериалов на данных [TMDB](https://www.themoviedb.org/). Переписано с оригинального
-vanilla-JS прототипа на **Next.js 16 (App Router)** и **Tailwind CSS v4**.
+A movie & TV showcase built on [TMDB](https://www.themoviedb.org/) data. Rewritten from the original
+vanilla-JS prototype into **Next.js 16 (App Router)** and **Tailwind CSS v4**, with full
+internationalization across English, Russian, and Spanish.
 
-## Что внутри
+## What's inside
 
-- **Главная** — популярные фильмы и сериалы вперемешку, hero-баннер с автопрокруткой
-- **Фильмы / Сериалы / Аниме / Новое и популярное** — отдельные разделы с фильтром по жанрам
-- **Поиск** с живыми подсказками по мере ввода
-- **Страница фильма/сериала** — постер, описание, актёры, трейлер на YouTube, похожие тайтлы
-  (вместо модалки в оригинале — отдельный URL `/title/movie/123`, что дружелюбнее для шеринга и SEO)
-- **Избранное** — хранится в `localStorage`, синхронизируется через React Context
-- Полностью серверный рендеринг списков (Server Components) — TMDB API ключ никогда не попадает в браузер
-- **SEO**: метаданные и Open Graph / Twitter card на каждой странице (включая динамические превью для
-  карточек фильмов при шеринге), `robots.txt`, `sitemap.xml`
-- **Тесты**: unit-тесты на бизнес-логику (Vitest) и e2e на ключевые пользовательские сценарии (Playwright)
-- **CI**: lint, typecheck, unit-тесты, билд и e2e на каждый push/PR через GitHub Actions
+- **Home** — popular movies and TV shows mixed together, auto-rotating hero banner
+- **Movies / TV / Anime / New & Popular** — dedicated sections with genre filters
+- **Search** with live suggestions as you type
+- **Title page** — poster, overview, cast, YouTube trailer, similar titles
+  (a real URL, `/en/title/movie/123`, rather than a modal like the original — friendlier for sharing and SEO)
+- **Favorites** — stored in `localStorage`, synced through React Context
+- **Internationalization (en / ru / es)** — see the [Internationalization](#internationalization) section below
+- Fully server-rendered lists (Server Components) — the TMDB API key never reaches the browser
+- **SEO**: metadata and Open Graph / Twitter cards on every page (including dynamic preview images for
+  movie cards when shared), locale-aware `robots.txt` and `sitemap.xml`, `hreflang` alternates
+- **Tests**: unit tests for business logic (Vitest) and e2e tests for key user flows (Playwright)
+- **CI**: lint, typecheck, unit tests, build, and e2e on every push/PR via GitHub Actions
 
-## Скриншоты
+## Internationalization
+
+The site is fully localized in **English, Russian, and Spanish** — both the UI chrome (nav, buttons,
+labels) and the catalog content itself (movie/show titles, overviews, genre names), which are fetched
+from TMDB in the matching language.
+
+**How the initial locale is picked** (first visit, highest priority first):
+
+1. **Saved preference** — if the visitor has explicitly switched languages before, that choice is
+   remembered in a cookie and takes priority over everything else on every later visit.
+2. **Geolocation** — on Vercel, the `x-vercel-ip-country` header gives a reliable "which country is this
+   request coming from" signal: US/UK/etc. → English, CIS countries (Russia, Kazakhstan, Belarus,
+   Ukraine, and others) → Russian, Spanish-speaking countries (Spain, Mexico, Argentina, and others) →
+   Spanish.
+3. **Browser language** — the `Accept-Language` header, used when geolocation is unavailable (e.g. local
+   development) or inconclusive.
+4. **English** — the default when none of the above resolve to a supported locale.
+
+This resolution happens in `proxy.ts`, which redirects `/` to `/en`, `/ru`, or `/es` and keeps the
+choice in a cookie so it's remembered on the next visit. Every route is prefixed with its locale
+(`/en/movies`, `/ru/movies`, `/es/movies`), and a language switcher in the header lets visitors override
+the detected locale at any time.
+
+TMDB responses are requested with a matching `language` parameter (`en-US` / `ru-RU` / `es-ES`), so movie
+titles, descriptions, and genre names are localized along with the interface — switching the language
+switches the whole page, not just the labels around it.
+
+## Screenshots
 
 |                                    |                                    |
 | ---------------------------------- | ---------------------------------- |
-| **Главная** ![Главная](docs/screenshots/home.jpg) | **Мой список** ![Избранное](docs/screenshots/favorites.jpg) |
-| **Поиск с подсказками** ![Поиск](docs/screenshots/search.jpg) | **Страница фильма** ![Фильм](docs/screenshots/title-detail.jpg) |
-| **Фильтр по жанрам** ![Жанры](docs/screenshots/genre-filter.jpg) | |
+| **Home** ![Home](docs/screenshots/home.jpg) | **My List** ![Favorites](docs/screenshots/favorites.jpg) |
+| **Search suggestions** ![Search](docs/screenshots/search.jpg) | **Title page** ![Title](docs/screenshots/title-detail.jpg) |
+| **Genre filter** ![Genres](docs/screenshots/genre-filter.jpg) | |
 
-## Быстрый старт
+## Quick start
 
 ```bash
 npm install
 cp .env.example .env.local
 ```
 
-Впиши свой TMDB API-ключ в `.env.local` (см. раздел ниже), затем:
+Add your TMDB API key to `.env.local` (see the section below), then:
 
 ```bash
 npm run dev
 ```
 
-Откроется на [http://localhost:3000](http://localhost:3000).
+Opens at [http://localhost:3000](http://localhost:3000).
 
-### Получение TMDB API-ключа
+### Getting a TMDB API key
 
-Ключ обязателен — без него приложение покажет экран с инструкцией вместо каталога.
+A key is required — without one, the app shows a setup screen with instructions instead of the catalog.
 
-1. Зарегистрируйся на [themoviedb.org](https://www.themoviedb.org/signup) и получи бесплатный API-ключ
-   (Настройки → API → v3 auth key или v4 Read Access Token — оба формата поддерживаются, определяется
-   автоматически по формату строки).
-2. Впиши его в `.env.local`:
+1. Sign up at [themoviedb.org](https://www.themoviedb.org/signup) and grab a free API key
+   (Settings → API → either a v3 auth key or a v4 Read Access Token both work; the app detects which
+   format you've provided automatically).
+2. Add it to `.env.local`:
    ```
-   TMDB_API_KEY=твой_ключ
+   TMDB_API_KEY=your_key
    ```
-3. Перезапусти `npm run dev`.
+3. Restart `npm run dev`.
 
-## Стек
+## Stack
 
 - Next.js 16 (App Router, Server Components, Route Handlers)
 - TypeScript
 - Tailwind CSS v4
-- `next/image` с CDN-оптимизацией постеров TMDB
+- `next-intl` for internationalization and locale-aware routing
+- `next/image` with CDN-optimized TMDB posters
 - Vitest + Testing Library (unit)
 - Playwright (e2e)
 
-## Структура проекта
+## Project structure
 
 ```
 app/
-  page.tsx                 — главная
-  movies/ tv/ anime/ new/  — секции каталога
-  search/                  — результаты поиска
-  favorites/               — серверная обёртка (метаданные) + FavoritesView
-  title/[type]/[id]/       — страница фильма/сериала (+ generateMetadata для OG-превью)
-  robots.ts sitemap.ts     — SEO-файлы
-components/                — переиспользуемые UI-компоненты
-context/                   — FavoritesContext, ToastContext
+  [locale]/
+    page.tsx                 — home
+    movies/ tv/ anime/ new/  — catalog sections
+    search/                  — search results
+    favorites/               — server wrapper (metadata) + FavoritesView
+    title/[type]/[id]/       — movie/show detail page (+ generateMetadata for OG previews)
+    layout.tsx               — locale-aware root layout, fonts, providers
+  api/suggestions/           — search-suggestions route handler (locale-agnostic)
+  robots.ts sitemap.ts       — SEO files, enumerated across all locales
+i18n/
+  config.ts                  — supported locales, TMDB language mapping, country → locale detection
+  request.ts                 — next-intl server config
+  navigation.ts               — locale-swapping path helpers
+proxy.ts                 — locale detection (cookie → geo → Accept-Language → default) and routing
+messages/                    — en.json, ru.json, es.json translation dictionaries
+components/                  — reusable UI components
+context/                     — FavoritesContext, ToastContext
 lib/
-  tmdb.ts                  — серверный TMDB-клиент (ключ не покидает сервер)
-  tmdb-client.ts           — клиент-safe хелперы для URL постеров
-  queries.ts                — сборка данных по разделам (аналог fetchAndRender из оригинала)
-types/tmdb.ts               — типы TMDB-сущностей
-e2e/                        — Playwright-тесты пользовательских сценариев
-*.test.ts(x)                — unit-тесты рядом с тестируемым файлом
+  tmdb.ts                    — server-side TMDB client (key never leaves the server), locale-aware
+  tmdb-client.ts              — client-safe helpers for poster URLs
+  queries.ts                  — per-section data fetching (locale-aware; anime genre labels per locale)
+types/tmdb.ts                 — TMDB entity types
+e2e/                          — Playwright tests for key user flows
+*.test.ts(x)                  — unit tests colocated with the file under test
 ```
 
-## Тестирование
+## Testing
 
 ```bash
-npm test              # unit-тесты (Vitest), разово
-npm run test:watch    # unit-тесты в watch-режиме
-npm run test:e2e      # e2e (Playwright) — требует TMDB_API_KEY и собранный проект
-npm run test:e2e:ui   # то же самое с интерактивным UI-раннером
+npm test              # unit tests (Vitest), single run
+npm run test:watch    # unit tests in watch mode
+npm run test:e2e      # e2e (Playwright) — requires TMDB_API_KEY and a built project
+npm run test:e2e:ui   # same, with the interactive UI runner
 npm run typecheck     # tsc --noEmit
 npm run lint          # eslint
 ```
 
-Перед первым запуском e2e установи браузеры Playwright:
+Before running e2e tests for the first time, install the Playwright browsers:
 
 ```bash
 npx playwright install --with-deps chromium
 ```
 
-**Важно про e2e:** тесты ходят в настоящий TMDB API через собственные серверные запросы приложения
-(Server Components выполняются на сервере, поэтому мокать их на уровне браузера, как обычный
-`page.route()`, не получится без экспериментальной прокси-интеграции). Поэтому:
+**A note on e2e tests:** they hit the real TMDB API through the app's own server-side requests (Server
+Components run on the server, so mocking them at the browser level with a plain `page.route()` isn't
+possible without an experimental proxy integration). Because of that:
 
-- нужен реальный `TMDB_API_KEY` в окружении, где тесты запускаются, включая CI (см. ниже);
-- тесты написаны так, чтобы не зависеть от конкретных тайтлов — они проверяют структуру и поведение
-  («на странице отображается сетка карточек», «клик по карточке ведёт на страницу тайтла»), а не точные
-  названия фильмов, потому что список «популярного» на TMDB меняется со временем.
+- a real `TMDB_API_KEY` is required wherever the tests run, including in CI (see below);
+- tests are written to avoid depending on specific titles — they check structure and behavior ("the page
+  renders a grid of cards", "clicking a card navigates to its title page") rather than exact movie names,
+  since TMDB's "popular" list changes over time.
 
 ## CI (GitHub Actions)
 
-Workflow в `.github/workflows/ci.yml` запускает на каждый push/PR в `main`: lint → typecheck → unit-тесты
-→ билд → e2e. Для его работы добавь секрет в настройках репозитория:
+The workflow in `.github/workflows/ci.yml` runs on every push/PR to `main`: lint → typecheck → unit tests
+→ build → e2e. For it to work, add a secret in the repository settings:
 
 **Settings → Secrets and variables → Actions → New repository secret**
 ```
 Name:  TMDB_API_KEY
-Value: твой_ключ
+Value: your_key
 ```
 
-E2E-джоб пропускается для PR из форков без доступа к секретам, чтобы не ломать CI для внешних контрибьюторов.
+The e2e job is skipped for PRs from forks, which don't have access to secrets, so CI doesn't break for
+external contributors.
 
-## Деплой на Vercel
+## Deploying to Vercel
 
-1. Запушь репозиторий на GitHub.
-2. Импортируй проект в [Vercel](https://vercel.com/new).
-3. В настройках проекта (Environment Variables) добавь:
-   - `TMDB_API_KEY` — твой ключ
-   - `NEXT_PUBLIC_SITE_URL` — итоговый домен деплоя (например, `https://cinevibe.vercel.app`),
-     используется для абсолютных Open Graph/canonical URL и sitemap
-4. Deploy — дополнительная конфигурация не нужна, `next.config.ts` уже настроен под Vercel по умолчанию.
+1. Push the repository to GitHub.
+2. Import the project into [Vercel](https://vercel.com/new).
+3. In the project's Environment Variables settings, add:
+   - `TMDB_API_KEY` — your key
+   - `NEXT_PUBLIC_SITE_URL` — the final deployment domain (e.g. `https://cinevibe.vercel.app`), used for
+     absolute Open Graph/canonical URLs and the sitemap
+4. Deploy — no extra configuration is needed; `next.config.ts` is already set up for Vercel by default,
+   and locale detection automatically picks up Vercel's `x-vercel-ip-country` geo header.
 
-## Известные ограничения и что можно улучшить дальше
+## Known limitations and possible next steps
 
-- Раздел «Аниме» и жанровые фильтры используют эвристики TMDB (`with_origin_country=JP` +
-  `with_genres=16`), а не отдельную категорию TMDB — так же, как было в оригинале.
-- `TMDB_API_KEY` принимает **оба** формата — plain v3 API key и v4 Read Access Token (JWT) — и
-  автоматически выбирает правильный способ передачи (query-параметр `api_key` для v3, заголовок
-  `Authorization: Bearer` для v4).
-- Шрифты (Bebas Neue, Inter) сейчас подключены через `<link>` на Google Fonts CDN. Миграция на
-  `next/font/google` избавила бы от внешнего запроса при загрузке и убрала бы связанное
-  предупреждение линтера — не сделано в этой итерации, потому что не удалось проверить билд
-  в текущем окружении с ограниченным сетевым доступом; стоит попробовать отдельно.
-- `sitemap.ts` включает только сегодняшние популярные тайтлы, а не весь каталог TMDB (это
-  сотни тысяч страниц, которыми проект не владеет) — осознанный компромисс, а не недосмотр.
-
+- The "Anime" section and its genre filters rely on TMDB heuristics (`with_origin_country=JP` +
+  `with_genres=16`) rather than a dedicated TMDB category — same as in the original.
+- `TMDB_API_KEY` accepts **both** formats — a plain v3 API key and a v4 Read Access Token (JWT) — and
+  automatically picks the right way to send it (the `api_key` query parameter for v3, an
+  `Authorization: Bearer` header for v4).
+- `sitemap.ts` includes only today's popular titles per locale, not the entire TMDB catalog (that's
+  hundreds of thousands of pages this project doesn't own) — a deliberate tradeoff, not an oversight.
+- Locale detection by country is a best-effort heuristic (a fixed list of CIS and Spanish-speaking
+  country codes) rather than a full geo-IP lookup service — it covers the common cases well but isn't
+  exhaustive; anything not explicitly listed falls back to English.

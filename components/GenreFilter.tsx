@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { Genre } from "@/types/tmdb";
 
 interface SimpleGenre {
@@ -14,21 +15,23 @@ export default function GenreFilter({
   movieGenres,
   tvGenres,
   singleGenres,
-  singleLabel = "Жанры",
+  singleLabel,
   mode = "split",
 }: {
+  /** Already locale-prefixed, e.g. "/en/movies". */
   basePath: string;
   movieGenres?: Genre[];
   tvGenres?: Genre[];
   /** Flat list used in "single" mode — anime genres, or plain movie/tv genres on pages with only one media type. */
   singleGenres?: readonly SimpleGenre[];
-  /** Heading shown above the flat list in "single" mode. */
+  /** Heading shown above the flat list in "single" mode. Defaults to the generic "Genres" label if omitted. */
   singleLabel?: string;
   /** "split" shows Movies/TV columns (for pages mixing both media types), "single" shows one flat list (e.g. anime, or a single-media-type page like /movies). */
   mode?: "split" | "single";
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations("genreFilter");
   const activeGenre = searchParams.get("genre");
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -66,7 +69,7 @@ export default function GenreFilter({
           onClick={() => setOpen((o) => !o)}
           className="flex items-center gap-2 text-sm px-4 py-2 rounded-lg border border-border text-muted hover:border-accent hover:text-text transition-colors"
         >
-          <span>Жанры</span>
+          <span>{t("label")}</span>
           <span className={`transition-transform ${open ? "rotate-180" : ""}`}>▼</span>
         </button>
 
@@ -74,7 +77,7 @@ export default function GenreFilter({
           <div className="absolute top-full mt-2 right-0 bg-surface border border-border rounded-xl shadow-2xl p-4 z-40 w-max max-w-[calc(100vw-2rem)] sm:max-w-[420px]">
             {mode === "single" ? (
               <div>
-                <p className="text-xs uppercase tracking-wide text-muted mb-2">{singleLabel}</p>
+                <p className="text-xs uppercase tracking-wide text-muted mb-2">{singleLabel ?? t("label")}</p>
                 <div className="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto">
                   {singleGenres?.map((g) => (
                     <GenreOption
@@ -89,7 +92,7 @@ export default function GenreFilter({
             ) : (
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-muted mb-2">Фильмы</p>
+                  <p className="text-xs uppercase tracking-wide text-muted mb-2">{t("movies")}</p>
                   <div className="flex flex-col gap-1 max-h-80 overflow-y-auto pr-1">
                     {movieGenres?.map((g) => (
                       <GenreOption
@@ -102,7 +105,7 @@ export default function GenreFilter({
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-muted mb-2">Сериалы</p>
+                  <p className="text-xs uppercase tracking-wide text-muted mb-2">{t("tv")}</p>
                   <div className="flex flex-col gap-1 max-h-80 overflow-y-auto pr-1">
                     {tvGenres?.map((g) => (
                       <GenreOption
@@ -123,7 +126,7 @@ export default function GenreFilter({
       {activeGenre && activeName && (
         <span className="inline-flex items-center gap-2 text-sm bg-surface2 border border-border px-3 py-1.5 rounded-lg">
           {activeName}
-          <button onClick={() => applyGenre(null)} aria-label="Убрать фильтр жанра" className="text-muted hover:text-accent2">
+          <button onClick={() => applyGenre(null)} aria-label={t("clearAria")} className="text-muted hover:text-accent2">
             ✕
           </button>
         </span>
