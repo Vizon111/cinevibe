@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Bebas_Neue, Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, getTranslations } from "next-intl/server";
+import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import "./globals.css";
 import { FavoritesProvider } from "@/context/FavoritesContext";
@@ -105,6 +106,18 @@ export default async function RootLayout({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
+  // next-intl normally learns the current locale from an internal header
+  // that its own middleware sets. This project uses a custom proxy.ts
+  // instead (for cookie/geo/Accept-Language locale detection), which
+  // doesn't set that header — so plain calls like `getTranslations()` or
+  // `getLocale()` (used without an explicit `locale` argument, e.g. in
+  // page.tsx) would otherwise resolve to no locale and 404. Calling
+  // `setRequestLocale` here writes the locale (already reliably taken
+  // from the URL's `[locale]` segment via `params`) into next-intl's
+  // request-scoped cache, so every next-intl API call within this
+  // request — including in child Server Components — can find it.
+  setRequestLocale(locale);
+
   // Enables useTranslations/formatting/etc. in Client Components under
   // this layout without each one having to fetch messages individually.
   const messages = await getMessages();
@@ -115,7 +128,9 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <FavoritesProvider>
             <ToastProvider>
-              <Header />
+              <Suspense fallback={null}>
+                <Header />
+              </Suspense>
               {children}
             </ToastProvider>
           </FavoritesProvider>
