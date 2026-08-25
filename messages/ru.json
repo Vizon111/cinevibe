@@ -107,6 +107,7 @@
     "episodes": "Количество эпизодов: {count}",
     "minutes": "{count} мин",
     "trailerTitle": "Трейлер: {title}",
+    "viewOnTmdb": "Открыть {name} на TMDB (в новой вкладке)",
     "noOverview": "Описание отсутствует.",
     "unknown": "—"
   },

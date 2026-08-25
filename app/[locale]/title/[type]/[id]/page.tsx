@@ -171,8 +171,15 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
                   {cast.map((actor) => {
                     const profile = posterUrl(actor.profile_path, "w185");
                     return (
-                      <div key={actor.id} className="flex flex-col items-center gap-2 w-20 shrink-0 text-center">
-                        <div className="relative w-16 h-16 rounded-full overflow-hidden bg-surface2 border border-border shrink-0">
+                      <a
+                        key={actor.id}
+                        href={`https://www.themoviedb.org/person/${actor.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={t("viewOnTmdb", { name: actor.name })}
+                        className="group flex flex-col items-center gap-2 w-20 shrink-0 text-center rounded-lg focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+                      >
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden bg-surface2 border border-border shrink-0 transition-transform group-hover:scale-105">
                           {profile ? (
                             <Image src={profile} alt={actor.name} fill sizes="64px" className="object-cover" />
                           ) : (
@@ -180,12 +187,14 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
                           )}
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-text line-clamp-2 leading-tight">{actor.name}</p>
+                          <p className="text-xs font-medium text-text line-clamp-2 leading-tight group-hover:text-accent transition-colors">
+                            {actor.name}
+                          </p>
                           {actor.character && (
                             <p className="text-[11px] text-muted line-clamp-1 mt-0.5">{actor.character}</p>
                           )}
                         </div>
-                      </div>
+                      </a>
                     );
                   })}
                 </div>
