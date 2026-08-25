@@ -102,7 +102,15 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
       ? t("minutes", { count: details.runtime })
       : "";
 
-  const trailer = videos.results.find((v) => v.type === "Trailer" && v.site === "YouTube");
+  // Prefer an actual "Trailer", but many titles (especially anime/lesser-
+  // known ones) only have a "Teaser" uploaded, or the type field is just
+  // missing/inconsistent — falling back to any YouTube video is better
+  // than showing nothing when we know videos.results is non-empty.
+  const youtubeVideos = videos.results.filter((v) => v.site === "YouTube");
+  const trailer =
+    youtubeVideos.find((v) => v.type === "Trailer") ??
+    youtubeVideos.find((v) => v.type === "Teaser") ??
+    youtubeVideos[0];
   const cast = credits.cast.slice(0, 8);
   const similarItems = similar.results.slice(0, 10).map((s) => ({ ...s, media_type: mediaType }));
   const backdrop = backdropUrl(details.backdrop_path, "w1280");

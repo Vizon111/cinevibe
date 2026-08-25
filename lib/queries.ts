@@ -235,10 +235,21 @@ export interface DetailBundle {
 }
 
 export async function getDetailBundle(id: number, mediaType: MediaType, locale: Locale): Promise<DetailBundle> {
+  // TMDB's `language` param strictly filters /videos by that exact
+  // language — most titles (especially anime and lesser-known ones)
+  // only ever get a trailer uploaded in one language, so en/es visitors
+  // often got nothing back even though a trailer exists in the DB.
+  // `include_video_language` is TMDB's documented fallback mechanism: it
+  // ignores `language` for video filtering and instead returns videos
+  // matching any of the given languages, plus untagged ones via "null".
+  // We ask for the current locale first, then English (the most likely
+  // language actually attached to a video), then untagged videos.
+  const videoLanguages = Array.from(new Set([locale, "en", "null"])).join(",");
+
   const [details, credits, videos, similar] = await Promise.all([
     tmdbFetch<MovieDetails>(`/${mediaType}/${id}`, {}, 3600, locale),
     tmdbFetch<CreditsResponse>(`/${mediaType}/${id}/credits`, {}, 3600, locale),
-    tmdbFetch<VideosResponse>(`/${mediaType}/${id}/videos`, {}, 3600, locale),
+    tmdbFetch<VideosResponse>(`/${mediaType}/${id}/videos`, { include_video_language: videoLanguages }, 3600, locale),
     tmdbFetch<TmdbListResponse>(`/${mediaType}/${id}/similar`, {}, 3600, locale).catch(() => empty()),
   ]);
   return { details, credits, videos, similar };
