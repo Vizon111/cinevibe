@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import SectionHeader from "@/components/SectionHeader";
 import MovieGrid from "@/components/MovieGrid";
 import Pagination from "@/components/Pagination";
 import ApiKeyAlert from "@/components/ApiKeyAlert";
 import { getSectionData } from "@/lib/queries";
 import { TmdbAuthError } from "@/lib/tmdb";
-import { isLocale, type Locale } from "@/i18n/config";
+import { isLocale } from "@/i18n/config";
 import { notFound } from "next/navigation";
 
 export const revalidate = 0;
@@ -28,11 +28,17 @@ export async function generateMetadata({ params, searchParams }: SearchPageProps
   };
 }
 
-export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const params = await searchParams;
-  const query = params.q || "";
-  const page = Number(params.page) || 1;
-  const locale = (await getLocale()) as Locale;
+export default async function SearchPage({ params, searchParams }: SearchPageProps) {
+  const { locale: rawLocale } = await params;
+  // The [locale] layout already validates this and calls notFound() for
+  // an invalid locale, so this guard just narrows the type for TS — it
+  // isn't expected to actually trigger during normal navigation.
+  if (!isLocale(rawLocale)) notFound();
+  const locale = rawLocale;
+  setRequestLocale(locale);
+  const resolvedSearchParams = await searchParams;
+  const query = resolvedSearchParams.q || "";
+  const page = Number(resolvedSearchParams.page) || 1;
   const t = await getTranslations("searchPage");
 
   if (!query) {

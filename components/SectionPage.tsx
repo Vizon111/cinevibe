@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import Hero from "@/components/Hero";
 import SectionHeader from "@/components/SectionHeader";
 import GenreFilter from "@/components/GenreFilter";
@@ -14,17 +14,17 @@ import type { Genre } from "@/types/tmdb";
 interface Props {
   section: "movies" | "tv" | "anime" | "new";
   title: string;
+  locale: Locale;
   /** Locale-agnostic path, e.g. "/movies" — the current locale is prefixed internally. */
   basePath: string;
   searchParams: Promise<{ page?: string; genre?: string }>;
 }
 
-export default async function SectionPage({ section, title, basePath, searchParams }: Props) {
+export default async function SectionPage({ section, title, locale, basePath, searchParams }: Props) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
   const genre = params.genre || null;
-  const locale = (await getLocale()) as Locale;
-  const t = await getTranslations("genreFilter");
+  const t = await getTranslations({ locale, namespace: "genreFilter" });
   const localizedBasePath = `/${locale}${basePath}`;
 
   let data, genres, heroMovies;

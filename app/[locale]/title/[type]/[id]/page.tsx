@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getDetailBundle } from "@/lib/queries";
 import { TmdbAuthError } from "@/lib/tmdb";
 import { posterUrl, backdropUrl, ratingBadgeClass } from "@/lib/tmdb-client";
@@ -68,6 +68,7 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
   const { locale, type, id } = await params;
   if (!isLocale(locale)) notFound();
   if (type !== "movie" && type !== "tv") notFound();
+  setRequestLocale(locale);
   const mediaType = type as MediaType;
   const movieId = Number(id);
   if (!movieId) notFound();
