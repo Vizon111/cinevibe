@@ -1,5 +1,6 @@
 import "server-only";
 import { tmdbFetch } from "./tmdb";
+import { getImdbRating, type ImdbRating } from "./omdb";
 import type { Locale } from "@/i18n/config";
 import { WATCH_PROVIDER_COUNTRY } from "@/i18n/config";
 import type {
@@ -247,6 +248,10 @@ export interface DetailBundle {
    *  country for the current locale — see WATCH_PROVIDER_COUNTRY. `null`
    *  when TMDB has no data for that country (common for niche titles). */
   watchProviders: WatchProviderCountry | null;
+  /** Real IMDb rating (via OMDb), shown alongside TMDB's own score.
+   *  `null` if OMDB_API_KEY isn't configured, or OMDb has no entry for
+   *  this title — either way the rest of the page renders normally. */
+  imdbRating: ImdbRating | null;
 }
 
 export async function getDetailBundle(id: number, mediaType: MediaType, locale: Locale): Promise<DetailBundle> {
@@ -262,7 +267,11 @@ export async function getDetailBundle(id: number, mediaType: MediaType, locale: 
   const videoLanguages = Array.from(new Set([locale, "en", "null"])).join(",");
 
   const [details, credits, videos, similar, watchProvidersResponse] = await Promise.all([
-    tmdbFetch<MovieDetails>(`/${mediaType}/${id}`, {}, 3600, locale),
+    // external_ids is requested for both movies and TV: movies already get
+    // imdb_id on the base response, but TV shows only expose it via
+    // append_to_response — asking for both keeps this call uniform for
+    // either media type instead of needing a media-type-specific branch.
+    tmdbFetch<MovieDetails>(`/${mediaType}/${id}`, { append_to_response: "external_ids" }, 3600, locale),
     tmdbFetch<CreditsResponse>(`/${mediaType}/${id}/credits`, {}, 3600, locale),
     tmdbFetch<VideosResponse>(`/${mediaType}/${id}/videos`, { include_video_language: videoLanguages }, 3600, locale),
     tmdbFetch<TmdbListResponse>(`/${mediaType}/${id}/similar`, {}, 3600, locale).catch(() => empty()),
@@ -274,8 +283,12 @@ export async function getDetailBundle(id: number, mediaType: MediaType, locale: 
   ]);
 
   const watchProviders = watchProvidersResponse?.results[WATCH_PROVIDER_COUNTRY[locale]] ?? null;
+  // Movies have imdb_id directly; TV only gets it through external_ids
+  // (requested above) — falling back covers both without a type branch.
+  const imdbId = details.imdb_id ?? details.external_ids?.imdb_id ?? null;
+  const imdbRating = await getImdbRating(imdbId);
 
-  return { details, credits, videos, similar, watchProviders };
+  return { details, credits, videos, similar, watchProviders, imdbRating };
 }
 
 export async function searchSuggestions(query: string, locale: Locale): Promise<TmdbItem[]> {

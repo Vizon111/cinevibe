@@ -86,7 +86,7 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
     throw err;
   }
 
-  const { details, credits, videos, similar, watchProviders } = bundle;
+  const { details, credits, videos, similar, watchProviders, imdbRating } = bundle;
 
   const title = details.title || details.name || tCard("noTitle");
   const date = details.release_date || details.first_air_date || "";
@@ -173,6 +173,20 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
                 ⭐ {rating}
                 {voteCount && <span className="opacity-70 font-normal">({t("voteCount", { count: voteCount })})</span>}
               </span>
+              {imdbRating && (
+                <a
+                  href={`https://www.imdb.com/title/${details.imdb_id ?? details.external_ids?.imdb_id}/`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#f5c518]/15 text-[#f5c518] hover:bg-[#f5c518]/25 transition-colors"
+                  aria-label={t("imdbRatingLabel", { rating: imdbRating.imdbRating })}
+                >
+                  <span className="font-bold text-[10px] tracking-wide">IMDb</span> {imdbRating.imdbRating}
+                  {imdbRating.imdbVotes !== "N/A" && (
+                    <span className="opacity-70 font-normal">({imdbRating.imdbVotes})</span>
+                  )}
+                </a>
+              )}
               <span className="text-muted">{year}</span>
               {genresText && <span className="text-muted">{genresText}</span>}
               {runtimeText && <span className="text-muted">{runtimeText}</span>}

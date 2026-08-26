@@ -87,6 +87,14 @@ export interface MovieDetails extends TmdbItem {
   /** TV only — the show's creator(s)/showrunner(s), returned directly by
    *  /tv/{id} rather than needing to be inferred from the crew list. */
   created_by?: { id: number; name: string; profile_path?: string | null }[];
+  /** Movies only — /movie/{id} returns this directly. TV shows don't get
+   *  it on the base endpoint, hence external_ids below (requested via
+   *  append_to_response for both types, so the shape is consistent). */
+  imdb_id?: string | null;
+  /** Populated for both movies and TV via append_to_response=external_ids
+   *  — the reliable way to get an IMDb ID for TV shows, which /tv/{id}
+   *  doesn't otherwise return. */
+  external_ids?: { imdb_id?: string | null };
 }
 
 /** Shape stored in localStorage favorites — a trimmed-down, self-contained record. */

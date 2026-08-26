@@ -118,6 +118,7 @@
     "trailerTitle": "Трейлер: {title}",
     "viewOnTmdb": "Открыть {name} на TMDB (в новой вкладке)",
     "voteCount": "{count} голосов",
+    "imdbRatingLabel": "Рейтинг IMDb: {rating} из 10 (откроется на IMDb в новой вкладке)",
     "noOverview": "Описание отсутствует.",
     "unknown": "—"
   },
