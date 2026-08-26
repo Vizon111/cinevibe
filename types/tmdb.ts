@@ -34,8 +34,17 @@ export interface CastMember {
   profile_path?: string | null;
 }
 
+export interface CrewMember {
+  id: number;
+  name: string;
+  job: string;
+  department?: string;
+  profile_path?: string | null;
+}
+
 export interface CreditsResponse {
   cast: CastMember[];
+  crew: CrewMember[];
 }
 
 export interface Video {
@@ -49,11 +58,35 @@ export interface VideosResponse {
   results: Video[];
 }
 
+/** A single service (e.g. Netflix) offering a title, from TMDB's
+ *  JustWatch-powered watch/providers endpoint. */
+export interface WatchProvider {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
+}
+
+export interface WatchProviderCountry {
+  link: string;
+  flatrate?: WatchProvider[];
+  rent?: WatchProvider[];
+  buy?: WatchProvider[];
+}
+
+/** Keyed by ISO 3166-1 alpha-2 country code (e.g. "US", "RU"). */
+export interface WatchProvidersResponse {
+  id: number;
+  results: Record<string, WatchProviderCountry>;
+}
+
 export interface MovieDetails extends TmdbItem {
   genres?: Genre[];
   runtime?: number;
   number_of_seasons?: number;
   number_of_episodes?: number;
+  /** TV only — the show's creator(s)/showrunner(s), returned directly by
+   *  /tv/{id} rather than needing to be inferred from the crew list. */
+  created_by?: { id: number; name: string; profile_path?: string | null }[];
 }
 
 /** Shape stored in localStorage favorites — a trimmed-down, self-contained record. */

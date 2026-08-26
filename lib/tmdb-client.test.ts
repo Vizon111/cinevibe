@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { posterUrl, backdropUrl, ratingBadgeClass } from "./tmdb-client";
+import { posterUrl, backdropUrl, ratingBadgeClass, formatVoteCount } from "./tmdb-client";
 
 describe("posterUrl", () => {
   it("builds a full TMDB image URL with the default size", () => {
@@ -49,5 +49,25 @@ describe("ratingBadgeClass", () => {
   it("uses the emerald style at 7 and above", () => {
     expect(ratingBadgeClass(7)).toBe("bg-emerald-500/15 text-emerald-400");
     expect(ratingBadgeClass(9.5)).toBe("bg-emerald-500/15 text-emerald-400");
+  });
+});
+
+describe("formatVoteCount", () => {
+  it("returns null for a missing, zero, or negative vote count", () => {
+    expect(formatVoteCount(undefined, "en")).toBeNull();
+    expect(formatVoteCount(0, "en")).toBeNull();
+    expect(formatVoteCount(-5, "en")).toBeNull();
+  });
+
+  it("formats small counts as-is", () => {
+    expect(formatVoteCount(42, "en")).toBe("42");
+  });
+
+  it("compacts large counts (e.g. thousands as K)", () => {
+    expect(formatVoteCount(12453, "en")).toBe("12.5K");
+  });
+
+  it("compacts millions as M", () => {
+    expect(formatVoteCount(1200000, "en")).toBe("1.2M");
   });
 });

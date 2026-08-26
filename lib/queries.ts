@@ -1,7 +1,18 @@
 import "server-only";
 import { tmdbFetch } from "./tmdb";
 import type { Locale } from "@/i18n/config";
-import type { Genre, TmdbItem, TmdbListResponse, MovieDetails, CreditsResponse, VideosResponse, MediaType } from "@/types/tmdb";
+import { WATCH_PROVIDER_COUNTRY } from "@/i18n/config";
+import type {
+  Genre,
+  TmdbItem,
+  TmdbListResponse,
+  MovieDetails,
+  CreditsResponse,
+  VideosResponse,
+  WatchProvidersResponse,
+  WatchProviderCountry,
+  MediaType,
+} from "@/types/tmdb";
 
 /**
  * Anime genre labels are hand-authored (TMDB doesn't have a dedicated
@@ -232,6 +243,10 @@ export interface DetailBundle {
   credits: CreditsResponse;
   videos: VideosResponse;
   similar: TmdbListResponse;
+  /** Streaming/rent/buy providers for this title in one representative
+   *  country for the current locale — see WATCH_PROVIDER_COUNTRY. `null`
+   *  when TMDB has no data for that country (common for niche titles). */
+  watchProviders: WatchProviderCountry | null;
 }
 
 export async function getDetailBundle(id: number, mediaType: MediaType, locale: Locale): Promise<DetailBundle> {
@@ -246,13 +261,21 @@ export async function getDetailBundle(id: number, mediaType: MediaType, locale: 
   // language actually attached to a video), then untagged videos.
   const videoLanguages = Array.from(new Set([locale, "en", "null"])).join(",");
 
-  const [details, credits, videos, similar] = await Promise.all([
+  const [details, credits, videos, similar, watchProvidersResponse] = await Promise.all([
     tmdbFetch<MovieDetails>(`/${mediaType}/${id}`, {}, 3600, locale),
     tmdbFetch<CreditsResponse>(`/${mediaType}/${id}/credits`, {}, 3600, locale),
     tmdbFetch<VideosResponse>(`/${mediaType}/${id}/videos`, { include_video_language: videoLanguages }, 3600, locale),
     tmdbFetch<TmdbListResponse>(`/${mediaType}/${id}/similar`, {}, 3600, locale).catch(() => empty()),
+    // watch/providers isn't localized by `language` at all (it's keyed by
+    // country only), so a failure here shouldn't take down the whole page.
+    tmdbFetch<WatchProvidersResponse>(`/${mediaType}/${id}/watch/providers`, {}, 3600 * 24, locale).catch(
+      () => null
+    ),
   ]);
-  return { details, credits, videos, similar };
+
+  const watchProviders = watchProvidersResponse?.results[WATCH_PROVIDER_COUNTRY[locale]] ?? null;
+
+  return { details, credits, videos, similar, watchProviders };
 }
 
 export async function searchSuggestions(query: string, locale: Locale): Promise<TmdbItem[]> {

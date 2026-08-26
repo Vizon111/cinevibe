@@ -86,3 +86,18 @@ export function localeFromAcceptLanguage(header: string | null | undefined): Loc
 export function isLocale(value: string): value is Locale {
   return (LOCALES as readonly string[]).includes(value);
 }
+
+/**
+ * Country used to look up watch providers for a given locale. TMDB's
+ * watch/providers data is keyed by ISO 3166-1 country (via JustWatch), not
+ * by language, and we don't have the visitor's real location on the title
+ * page — so this picks one representative country per locale rather than
+ * guessing. It's an approximation (e.g. an Argentinian visitor on the
+ * Spanish UI will see Spain's providers), which is called out in the UI
+ * itself (see WatchProviders component) rather than presented as exact.
+ */
+export const WATCH_PROVIDER_COUNTRY: Record<Locale, string> = {
+  en: "US",
+  ru: "RU",
+  es: "ES",
+};

@@ -100,6 +100,15 @@
   "titlePage": {
     "back": "← Volver",
     "cast": "Reparto",
+    "director": "Director",
+    "creator": "Creador",
+    "creators": "Creadores",
+    "watchProviders": "Dónde ver",
+    "watchFlatrate": "Streaming",
+    "watchRent": "Alquilar",
+    "watchBuy": "Comprar",
+    "watchAttribution": "Datos de streaming proporcionados por JustWatch",
+    "watchViewAll": "Ver todas las opciones en TMDB",
     "similarMovies": "Películas similares",
     "similarTv": "Series similares",
     "noPoster": "Sin póster",
@@ -108,6 +117,7 @@
     "minutes": "{count} min",
     "trailerTitle": "Tráiler: {title}",
     "viewOnTmdb": "Ver a {name} en TMDB (se abre en una pestaña nueva)",
+    "voteCount": "{count} votos",
     "noOverview": "Sin descripción disponible.",
     "unknown": "—"
   },

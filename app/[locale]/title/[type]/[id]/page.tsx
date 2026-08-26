@@ -5,10 +5,11 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getDetailBundle } from "@/lib/queries";
 import { TmdbAuthError } from "@/lib/tmdb";
-import { posterUrl, backdropUrl, ratingBadgeClass } from "@/lib/tmdb-client";
+import { posterUrl, backdropUrl, ratingBadgeClass, formatVoteCount } from "@/lib/tmdb-client";
 import ApiKeyAlert from "@/components/ApiKeyAlert";
 import FavoriteButton from "@/components/FavoriteButton";
 import MovieGrid from "@/components/MovieGrid";
+import WatchProviders from "@/components/WatchProviders";
 import { isLocale, type Locale } from "@/i18n/config";
 import type { MediaType } from "@/types/tmdb";
 
@@ -85,12 +86,13 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
     throw err;
   }
 
-  const { details, credits, videos, similar } = bundle;
+  const { details, credits, videos, similar, watchProviders } = bundle;
 
   const title = details.title || details.name || tCard("noTitle");
   const date = details.release_date || details.first_air_date || "";
   const year = date ? date.slice(0, 4) : t("unknown");
   const rating = details.vote_average ? details.vote_average.toFixed(1) : t("unknown");
+  const voteCount = formatVoteCount(details.vote_count, locale);
   const poster = posterUrl(details.poster_path, "w500");
   const genresText = details.genres?.map((g) => g.name).join(", ") || "";
   const runtimeText =
@@ -112,6 +114,19 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
     youtubeVideos.find((v) => v.type === "Teaser") ??
     youtubeVideos[0];
   const cast = credits.cast.slice(0, 8);
+
+  // Movies: pull the director(s) out of the crew list (TMDB doesn't
+  // surface this as its own field for movies the way it does for TV).
+  // TV: /tv/{id} returns created_by directly, which is more reliable
+  // than crew here — many shows don't tag a "Creator" job in crew at all.
+  const directors = credits.crew.filter((c) => c.job === "Director").map((c) => c.name);
+  const creators = (details.created_by ?? []).map((c) => c.name);
+  const creditedPeople =
+    mediaType === "tv" && creators.length > 0
+      ? { label: creators.length > 1 ? t("creators") : t("creator"), names: creators }
+      : directors.length > 0
+      ? { label: t("director"), names: directors }
+      : null;
   const similarItems = similar.results.slice(0, 10).map((s) => ({ ...s, media_type: mediaType }));
   const backdrop = backdropUrl(details.backdrop_path, "w1280");
 
@@ -156,6 +171,7 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
             <div className="flex items-center gap-3 text-sm flex-wrap">
               <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full ${ratingBadgeClass(details.vote_average)}`}>
                 ⭐ {rating}
+                {voteCount && <span className="opacity-70 font-normal">({t("voteCount", { count: voteCount })})</span>}
               </span>
               <span className="text-muted">{year}</span>
               {genresText && <span className="text-muted">{genresText}</span>}
@@ -163,6 +179,17 @@ export default async function TitleDetailPage({ params }: TitlePageProps) {
             </div>
 
             <p className="text-text/90 leading-relaxed max-w-3xl">{details.overview || t("noOverview")}</p>
+
+            {creditedPeople && (
+              <p className="text-sm text-muted">
+                <span className="text-text/80 font-medium">{creditedPeople.label}:</span>{" "}
+                {creditedPeople.names.join(", ")}
+              </p>
+            )}
+
+            {watchProviders && (
+              <WatchProviders data={watchProviders} locale={locale} tmdbLink={watchProviders.link} />
+            )}
 
             {cast.length > 0 && (
               <div>

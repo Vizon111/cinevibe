@@ -100,6 +100,15 @@
   "titlePage": {
     "back": "← Назад",
     "cast": "В ролях",
+    "director": "Режиссёр",
+    "creator": "Создатель",
+    "creators": "Создатели",
+    "watchProviders": "Где посмотреть",
+    "watchFlatrate": "Стриминг",
+    "watchRent": "Аренда",
+    "watchBuy": "Покупка",
+    "watchAttribution": "Данные о стриминге предоставлены JustWatch",
+    "watchViewAll": "Все варианты на TMDB",
     "similarMovies": "Похожие фильмы",
     "similarTv": "Похожие сериалы",
     "noPoster": "Нет постера",
@@ -108,6 +117,7 @@
     "minutes": "{count} мин",
     "trailerTitle": "Трейлер: {title}",
     "viewOnTmdb": "Открыть {name} на TMDB (в новой вкладке)",
+    "voteCount": "{count} голосов",
     "noOverview": "Описание отсутствует.",
     "unknown": "—"
   },
